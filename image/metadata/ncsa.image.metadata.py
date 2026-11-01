@@ -29,6 +29,17 @@ class ImageMetadataExtractor(Extractor):
         logging.getLogger('pyclowder').setLevel(logging.DEBUG)
         logging.getLogger('__main__').setLevel(logging.DEBUG)
 
+    def check_message(self, connector, host, secret_key, resource, parameters):
+        logger = logging.getLogger(__name__)
+        if 'MAX_FILE_SIZE' in os.environ:
+            max_file_size = int(os.environ['MAX_FILE_SIZE'])
+            file_size = int(parameters.get('fileSize', '0'))
+            if file_size > max_file_size:
+                filename = parameters.get('filename', 'NA')
+                logger.warning('skipping file %s: size %d exceeds max file size %d', filename, file_size, max_file_size)
+                return pyclowder.utils.CheckMessage.ignore
+        return pyclowder.utils.CheckMessage.download
+
     def process_message(self, connector, host, secret_key, resource, parameters):
         # Process the file and upload the results
 
